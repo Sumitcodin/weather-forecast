@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-content">
+            <div class="logo-container">
+                <div class="logo">Weather Forecast</div>
+                <div class="location-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="current-location">Loading location...</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="add-location" class="add-location-btn">
+                    <!-- <i class="fas fa-plus"></i> -->
+                    Locations
+                </button>
+                <!-- <button id="theme-toggle" class="theme-toggle-btn" title="Toggle dark/light mode">
+                    <i class="fas fa-moon"></i>
+                </button> -->
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="main-content">
+            <section class="hero">
+                <div class="sun-info sunrise">
+                    <i class="fas fa-sun"></i>
+                    <div class="sun-time">
+                        <span class="label">Sunrise</span>
+                        <span class="time" id="sunrise-time">--:--</span>
+                    </div>
+                </div>
+                <div class="current-weather">
+                    <h1 id="temperature">--°</h1>
+                    <p id="weather-description">Loading...</p>
+                    <p id="feels-like">Feels like --°</p>
+                    <div class="wind-info-pills">
+                        <div class="wind-pill">
+                            <i class="fas fa-wind"></i>
+                            <span id="wind-speed">-- km/h</span>
+                        </div>
+                        <div class="wind-pill">
+                            <i class="fas fa-compass"></i>
+                            <span id="wind-direction">--</span>
+                        </div>
+                        <div class="wind-pill">
+                            <i class="fas fa-tint"></i>
+                            <span id="humidity">--%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sun-info sunset">
+                    <i class="fas fa-moon"></i>
+                    <div class="sun-time">
+                        <span class="label">Sunset</span>
+                        <span class="time" id="sunset-time">--:--</span>
+                    </div>
+                </div>
+            </section>
+            <section class="forecast">
+                <h2 class="forecast-header">7-Day Forecast</h2>
+                <div class="forecast-wrapper">
+                    <button class="scroll-button left" id="forecast-scroll-left"><i class="fas fa-chevron-left"></i></button>
+                    <div id="forecast-container" class="forecast-container"></div>
+                    <button class="scroll-button right" id="forecast-scroll-right"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="side-panel" class="side-panel">
+        <div class="panel-header">
+            <h2>Add Location</h2>
+            <button id="close-panel" class="close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="panel-content">
+            <div class="input-group">
+                <input type="text" id="new-location" placeholder="Enter city name">
+                <button id="save-location" class="save-btn">Save</button>
+            </div>
+            <div id="search-suggestions" class="search-suggestions"></div>
+            <div class="saved-locations">
+                <h3>Saved Locations</h3>
+                <ul id="locations-list"></ul>
+            </div>
+        </div>
+    </div>
+    <div id="overlay" class="overlay"></div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html> 
