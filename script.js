@@ -49,8 +49,8 @@ const newLocationInput = document.getElementById('new-location');
 const saveLocationBtn = document.getElementById('save-location');
 const locationsList = document.getElementById('locations-list');
 const searchSuggestions = document.getElementById('search-suggestions');
-// const forecastScrollLeftBtn = document.getElementById('forecast-scroll-left');
-// const forecastScrollRightBtn = document.getElementById('forecast-scroll-right');
+const forecastScrollLeftBtn = document.getElementById('forecast-scroll-left');
+const forecastScrollRightBtn = document.getElementById('forecast-scroll-right');
 
 // Weather Background Animation
 const weatherBg = document.createElement('div');
@@ -71,48 +71,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (overlay) overlay.addEventListener('click', toggleSidePanel);
     if (saveLocationBtn) saveLocationBtn.addEventListener('click', addNewLocation);
     
-    // Scroll buttons for forecast (removed as forecast is now vertically scrollable)
-    // if (forecastScrollLeftBtn && forecastScrollRightBtn && forecastContainer) {
-    //     const scrollAmount = 300; // Adjust scroll distance as needed
+    // Scroll buttons for forecast
+    if (forecastScrollLeftBtn && forecastScrollRightBtn && forecastContainer) {
+        const scrollAmount = 300; // Adjust scroll distance as needed
 
-    //     forecastScrollLeftBtn.addEventListener('click', () => {
-    //         forecastContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-    //     });
+        forecastScrollLeftBtn.addEventListener('click', () => {
+            forecastContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
 
-    //     forecastScrollRightBtn.addEventListener('click', () => {
-    //         forecastContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    //     });
+        forecastScrollRightBtn.addEventListener('click', () => {
+            forecastContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
 
-    //     const updateScrollButtonsVisibility = () => {
-    //         // Buttons should be visible if content overflows, regardless of screen size
-    //         const { scrollWidth, clientWidth, scrollLeft } = forecastContainer;
+        const updateScrollButtonsVisibility = () => {
+            // Buttons should be visible if content overflows, regardless of screen size
+            const { scrollWidth, clientWidth, scrollLeft } = forecastContainer;
 
-    //         if (scrollWidth > clientWidth) {
-    //             // Show left button if not at the beginning
-    //             if (scrollLeft > 0) {
-    //                 forecastScrollLeftBtn.classList.add('visible');
-    //             } else {
-    //                 forecastScrollLeftBtn.classList.remove('visible');
-    //             }
+            if (scrollWidth > clientWidth) {
+                // Show left button if not at the beginning
+                if (scrollLeft > 0) {
+                    forecastScrollLeftBtn.classList.add('visible');
+                } else {
+                    forecastScrollLeftBtn.classList.remove('visible');
+                }
 
-    //             // Show right button if not at the end
-    //             if (scrollLeft + clientWidth < scrollWidth) {
-    //                 forecastScrollRightBtn.classList.add('visible');
-    //             } else {
-    //                 forecastScrollRightBtn.classList.remove('visible');
-    //             }
-    //         } else {
-    //             // Hide both if no scrollbar is needed
-    //             forecastScrollLeftBtn.classList.remove('visible');
-    //             forecastScrollRightBtn.classList.remove('visible');
-    //         }
-    //     };
+                // Show right button if not at the end
+                if (scrollLeft + clientWidth < scrollWidth) {
+                    forecastScrollRightBtn.classList.add('visible');
+                } else {
+                    forecastScrollRightBtn.classList.remove('visible');
+                }
+            } else {
+                // Hide both if no scrollbar is needed
+                forecastScrollLeftBtn.classList.remove('visible');
+                forecastScrollRightBtn.classList.remove('visible');
+            }
+        };
 
-    //     // Initial check and update on scroll/resize
-    //     updateScrollButtonsVisibility();
-    //     forecastContainer.addEventListener('scroll', updateScrollButtonsVisibility);
-    //     window.addEventListener('resize', updateScrollButtonsVisibility);
-    // }
+        // Initial check and update on scroll/resize
+        updateScrollButtonsVisibility();
+        forecastContainer.addEventListener('scroll', updateScrollButtonsVisibility);
+        window.addEventListener('resize', updateScrollButtonsVisibility);
+    }
     
     // Add event listener for location input to fetch suggestions
     if (newLocationInput) {
@@ -175,47 +175,99 @@ document.addEventListener('DOMContentLoaded', () => {
 async function init() {
     try {
         console.log('Initializing app...');
-        
-        // Get user's location
-        const position = await getCurrentPosition();
-        console.log('Position received:', position);
-        const { latitude, longitude } = position.coords;
-        console.log('Coordinates:', { latitude, longitude });
-        
-        // Get city name for current location
-        const currentCityName = await getCityFromCoordinates(latitude, longitude);
 
-        // Set current location data globally
-        currentLocationData = {
-            name: currentCityName,
-            lat: latitude,
-            lon: longitude,
-            isCurrent: true // Mark as current location
-        };
+        // Check geolocation permission status first
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
 
-        // Check if current location is already in savedLocations
-        const isCurrentLocationSaved = savedLocations.some(loc =>
-            loc.lat === latitude && loc.lon === longitude && loc.isCurrent
-        );
+        if (permissionStatus.state === 'granted') {
+            // Permission already granted, proceed to get position
+            const position = await getCurrentPosition();
+            console.log('Position received:', position);
+            const { latitude, longitude } = position.coords;
+            console.log('Coordinates:', { latitude, longitude });
+            
+            // Get city name for current location
+            const currentCityName = await getCityFromCoordinates(latitude, longitude);
 
-        if (!isCurrentLocationSaved) {
-            // If not saved or not marked as current, ensure it's added/updated
-            savedLocations = savedLocations.filter(loc => !loc.isCurrent);
-            savedLocations.unshift(currentLocationData); // Add to the beginning
-            localStorage.setItem('locations', JSON.stringify(savedLocations));
+            // Set current location data globally
+            currentLocationData = {
+                name: currentCityName,
+                lat: latitude,
+                lon: longitude,
+                isCurrent: true // Mark as current location
+            };
+
+            // Check if current location is already in savedLocations
+            const isCurrentLocationSaved = savedLocations.some(loc =>
+                loc.lat === latitude && loc.lon === longitude && loc.isCurrent
+            );
+
+            if (!isCurrentLocationSaved) {
+                // If not saved or not marked as current, ensure it's added/updated
+                savedLocations = savedLocations.filter(loc => !loc.isCurrent);
+                savedLocations.unshift(currentLocationData); // Add to the beginning
+                localStorage.setItem('locations', JSON.stringify(savedLocations));
+            }
+
+            // Update weather with coordinates
+            await updateWeather(latitude, longitude);
+        } else if (permissionStatus.state === 'prompt') {
+            // Permission not yet granted/denied, try to get position which will prompt
+            const position = await getCurrentPosition();
+            console.log('Position received:', position);
+            const { latitude, longitude } = position.coords;
+            console.log('Coordinates:', { latitude, longitude });
+            
+            // Get city name for current location
+            const currentCityName = await getCityFromCoordinates(latitude, longitude);
+
+            // Set current location data globally
+            currentLocationData = {
+                name: currentCityName,
+                lat: latitude,
+                lon: longitude,
+                isCurrent: true // Mark as current location
+            };
+
+            // Check if current location is already in savedLocations
+            const isCurrentLocationSaved = savedLocations.some(loc =>
+                loc.lat === latitude && loc.lon === longitude && loc.isCurrent
+            );
+
+            if (!isCurrentLocationSaved) {
+                // If not saved or not marked as current, ensure it's added/updated
+                savedLocations = savedLocations.filter(loc => !loc.isCurrent);
+                savedLocations.unshift(currentLocationData); // Add to the beginning
+                localStorage.setItem('locations', JSON.stringify(savedLocations));
+            }
+
+            // Update weather with coordinates
+            await updateWeather(latitude, longitude);
+        } else if (permissionStatus.state === 'denied') {
+            // Permission denied, inform user and provide option to enable
+            if (currentLocation) currentLocation.textContent = 'Location access denied';
+            const currentWeather = document.querySelector('.current-weather');
+            if (currentWeather) {
+                currentWeather.innerHTML = `
+                    <h1>--°</h1>
+                    <p>Location access denied. Please enable it in your browser settings to use this feature.</p>
+                    <button id="enable-location-btn" class="add-location-btn">Enable Location</button>
+                `;
+                document.getElementById('enable-location-btn').addEventListener('click', () => {
+                    // Attempt to get position again, which might re-prompt if user changed settings
+                    init();
+                });
+            }
         }
-
-        // Update weather with coordinates
-        await updateWeather(latitude, longitude);
     } catch (error) {
-        console.error('Error getting location:', error);
-        if (currentLocation) currentLocation.textContent = 'Location access denied';
+        console.error('Error initializing app:', error);
+        if (currentLocation) currentLocation.textContent = 'Location error';
         const currentWeather = document.querySelector('.current-weather');
         if (currentWeather) {
             currentWeather.innerHTML = `
                 <h1>--°</h1>
-                <p>Please enable location access</p>
-                <p>to see weather information</p>
+                <p>Unable to get your location: ${error.message}</p>
+                <p>Please check your internet connection or try again later.</p>
             `;
         }
     }

@@ -15,7 +15,7 @@
     --color-border: rgba(255,255,255,0.1);
     --color-shadow: 0 4px 6px rgba(0,0,0,0.1);
 
-    --forecast-item-bg: rgba(255, 255, 255, 0.05); /* More translucent for dark mode */
+    --forecast-item-bg: rgba(255, 255, 255, 0.0); /* More translucent for dark mode */
     --forecast-item-border: rgba(255, 255, 255, 0.05); /* More subtle border for dark mode */
 
     /* Animated Background Colors (Dark Mode) */
@@ -34,7 +34,7 @@ body.light-mode {
     --color-border: rgba(0,0,0,0.08);
     --color-shadow: 0 4px 12px rgba(0,0,0,0.06);
 
-    --forecast-item-bg: rgba(235, 243, 250, 0.15); /* More translucent for light mode */
+    --forecast-item-bg: rgba(235, 243, 250, 0.0); /* More translucent for light mode */
     --forecast-item-border: rgba(0,0,0,0.04); /* More subtle border for light mode */
 
     /* Animated Background Colors (Light Mode) */
@@ -574,28 +574,46 @@ nav {
 @media (max-width: 768px) {
     .side-panel {
         width: 100%;
-        right: -100%;
+        max-width: 100%;
     }
-
     .forecast-section {
         margin: 0 1rem;
     }
-
     .current-weather h1 {
-        font-size: 4rem;
+        font-size: 5rem;
     }
-
+    .forecast-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Center the forecast container */
+        margin: 0 auto; /* Center the wrapper itself */
+        max-width: 100vw; /* Ensure it doesn't overflow */
+        padding: 0 3rem; /* Padding for buttons */
+    }
     .forecast-container {
+        display: flex !important;
+        flex-direction: row !important;
         padding: 1rem 1.5vw 1rem 1.5vw;
         gap: 1rem;
-        justify-content: flex-start; /* Ensure items align to start for horizontal scroll */
+        justify-content: flex-start !important; /* Ensure items align to start for horizontal scroll */
+        overflow-x: auto !important; /* Enable horizontal scrolling */
+        overflow-y: hidden !important; /* Disable vertical scrolling */
+        max-height: unset !important; /* Remove max-height for horizontal layout */
+        white-space: nowrap; /* Prevent items from wrapping */
     }
     .forecast-item {
-        flex: 0 0 calc(50% - 0.5rem); /* Make tiles two per row with gap */
-        min-width: calc(50% - 0.5rem);
-        max-width: calc(50% - 0.5rem);
+        flex: 0 0 calc(50% - 0.5rem) !important; /* Make tiles two per row with gap */
+        min-width: calc(50% - 0.5rem) !important;
+        max-width: calc(50% - 0.5rem) !important;
         padding: 0.8rem;
-        aspect-ratio: 1; /* Explicitly ensure square shape */
+        aspect-ratio: 1 !important; /* Explicitly ensure square shape */
+        white-space: normal; /* Allow text within items to wrap */
+    }
+    .scroll-button {
+        display: flex !important; /* Show horizontal scroll buttons */
+        opacity: 0.4 !important; /* Still visible but not fully opaque when scrolling is possible */
+        visibility: visible !important;
     }
     .forecast-temp .max {
         font-size: 1.3rem;
@@ -765,6 +783,8 @@ canvas {
         rgba(255, 140, 0, 0.15), 
         rgba(255, 215, 0, 0.1)
     );
+    flex-direction: row; /* Align icon and text horizontally */
+    justify-content: space-between; /* Space out items to ends */
 }
 
 .sun-info.sunset {
@@ -772,6 +792,8 @@ canvas {
         rgba(74, 144, 226, 0.15), 
         rgba(255, 140, 0, 0.1)
     );
+    flex-direction: row; /* Align icon and text horizontally */
+    justify-content: space-between; /* Space out items to ends */
 }
 
 .sun-info:hover {
@@ -784,18 +806,26 @@ canvas {
 }
 
 .sun-info.sunrise i {
-    color: #ff8c00;
+    order: 1; /* Place icon after text for sunrise */
+    margin-left: 1rem; /* Add some space */
+    margin-right: 0; /* Ensure no conflicting right margin */
 }
 
 .sun-info.sunset i {
-    color: #4a90e2;
+    order: 1; /* Place icon after text for sunset */
+    margin-left: 1rem; /* Add some space */
+    margin-right: 0; /* Ensure no conflicting right margin */
 }
 
 .sun-time {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* Align text to start */
     gap: 0.5rem;
+}
+
+.sun-info.sunset .sun-time {
+    align-items: flex-start; /* Ensure text is aligned to start for sunset as well */
 }
 
 .sun-time .label {
@@ -1028,6 +1058,7 @@ canvas {
 @media (max-width: 768px) {
     .side-panel {
         width: 100%;
+        right: -100%;
         max-width: 100%;
     }
     .panel-header,
