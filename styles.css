@@ -1073,4 +1073,43 @@ canvas {
     #save-location {
         width: 100%;
     }
+}
+
+@media (max-width: 480px) {
+    .forecast-container {
+        flex-direction: column !important;
+        overflow-x: hidden !important; /* Disable horizontal scrolling */
+        overflow-y: auto !important; /* Enable vertical scrolling */
+        white-space: normal !important; /* Allow items to wrap */
+    }
+    .forecast-item {
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        aspect-ratio: auto !important;
+    }
+    .scroll-button {
+        display: none !important; /* Hide scroll buttons */
+    }
+    .forecast-wrapper {
+        padding: 0; /* Remove padding when buttons are hidden */
+        justify-content: center;
+    }
+    .sun-info {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center;
+    }
+    .sun-info.sunrise i,
+    .sun-info.sunset i {
+        order: unset !important;
+        margin: 0 !important;
+    }
+    .sun-info.sunset .sun-time {
+        align-items: center !important;
+    }
+    .sun-time {
+        align-items: center !important;
+    }
 } 

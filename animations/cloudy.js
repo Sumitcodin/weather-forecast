@@ -5,6 +5,9 @@ class CloudyAnimation {
         this.clouds = [];
         this.time = 0;
         this.init();
+
+        // Add resize listener
+        window.addEventListener('resize', this.handleResize.bind(this));
     }
 
     init() {
@@ -12,20 +15,59 @@ class CloudyAnimation {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
 
+        // Define a few base cloud structures
+        const cloudStructures = [
+            // Standard fluffy cloud
+            [
+                { xOffset: 0, yOffset: 0, radiusFactor: 1.0 },
+                { xOffset: -0.3, yOffset: 0.2, radiusFactor: 0.7 },
+                { xOffset: 0.3, yOffset: 0.2, radiusFactor: 0.7 },
+                { xOffset: -0.2, yOffset: -0.2, radiusFactor: 0.6 },
+                { xOffset: 0.2, yOffset: -0.2, radiusFactor: 0.6 },
+                { xOffset: 0, yOffset: 0.4, radiusFactor: 0.5 },
+                { xOffset: -0.4, yOffset: 0, radiusFactor: 0.6 }, 
+                { xOffset: 0.4, yOffset: 0, radiusFactor: 0.6 },  
+                { xOffset: 0, yOffset: -0.4, radiusFactor: 0.5 } 
+            ],
+            // Wider, flatter cloud
+            [
+                { xOffset: 0, yOffset: 0, radiusFactor: 1.0 },
+                { xOffset: -0.4, yOffset: 0.1, radiusFactor: 0.8 },
+                { xOffset: 0.4, yOffset: 0.1, radiusFactor: 0.8 },
+                { xOffset: -0.2, yOffset: -0.1, radiusFactor: 0.7 },
+                { xOffset: 0.2, yOffset: -0.1, radiusFactor: 0.7 },
+                { xOffset: -0.5, yOffset: 0.2, radiusFactor: 0.6 }, 
+                { xOffset: 0.5, yOffset: 0.2, radiusFactor: 0.6 }  
+            ],
+            // Taller, thinner cloud
+            [
+                { xOffset: 0, yOffset: 0, radiusFactor: 1.0 },
+                { xOffset: 0.1, yOffset: 0.3, radiusFactor: 0.7 },
+                { xOffset: -0.1, yOffset: 0.3, radiusFactor: 0.7 },
+                { xOffset: 0, yOffset: -0.3, radiusFactor: 0.6 },
+                { xOffset: 0.2, yOffset: 0.5, radiusFactor: 0.5 }, 
+                { xOffset: -0.2, yOffset: 0.5, radiusFactor: 0.5 } 
+            ]
+        ];
+
         // Create clouds with more varied properties
         for (let i = 0; i < 8; i++) {
+            const structure = cloudStructures[Math.floor(Math.random() * cloudStructures.length)];
             this.clouds.push({
                 x: Math.random() * this.canvas.width,
                 y: Math.random() * (this.canvas.height / 2),
-                width: 120 + Math.random() * 180,
-                height: 40 + Math.random() * 30,
-                speed: 0.1 + Math.random() * 0.2,
+                baseWidth: 120 + Math.random() * 180, 
+                baseHeight: 40 + Math.random() * 30, 
+                speed: 0.05 + Math.random() * 0.1,
                 opacity: 0.6 + Math.random() * 0.3,
-                puffCount: 5 + Math.floor(Math.random() * 4),
                 verticalSpeed: 0.1 + Math.random() * 0.2,
                 verticalRange: 10 + Math.random() * 20,
-                puffSizes: Array(5 + Math.floor(Math.random() * 4)).fill(0).map(() => 0.5 + Math.random() * 0.5),
-                puffShapes: Array(5 + Math.floor(Math.random() * 4)).fill(0).map(() => Math.random())
+                puffs: structure.map(puff => ({
+                    xOffset: puff.xOffset,
+                    yOffset: puff.yOffset,
+                    radiusFactor: puff.radiusFactor,
+                    randomAngle: Math.random() * Math.PI * 2 
+                }))
             });
         }
 
@@ -33,95 +75,44 @@ class CloudyAnimation {
         this.animate();
     }
 
-    drawCloudPuff(x, y, size, shapeType, time) {
-        const wobble = Math.sin(time * 0.001) * 2;
-        
-        // Enable shadow blur for softer edges
-        this.ctx.shadowBlur = size * 0.5;
-        this.ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-        
-        switch(Math.floor(shapeType * 4)) {
-            case 0: // Full circle with multiple layers
-                for (let i = 0; i < 3; i++) {
-                    this.ctx.beginPath();
-                    this.ctx.arc(x, y + wobble, size * (1 - i * 0.2), 0, Math.PI * 2);
-                    this.ctx.fill();
-                }
-                break;
-                
-            case 1: // Semi-circle with gradient
-                const gradient = this.ctx.createRadialGradient(
-                    x, y + wobble, 0,
-                    x, y + wobble, size
-                );
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-                this.ctx.fillStyle = gradient;
-                
-                this.ctx.beginPath();
-                this.ctx.arc(x, y + wobble, size, 0, Math.PI);
-                this.ctx.fill();
-                break;
-                
-            case 2: // Curved puff with multiple curves
-                for (let i = 0; i < 2; i++) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(x - size, y + wobble);
-                    this.ctx.quadraticCurveTo(
-                        x, y + wobble - size * (1.5 - i * 0.3),
-                        x + size, y + wobble
-                    );
-                    this.ctx.quadraticCurveTo(
-                        x, y + wobble + size * (0.5 + i * 0.2),
-                        x - size, y + wobble
-                    );
-                    this.ctx.fill();
-                }
-                break;
-                
-            case 3: // Wavy puff with layered waves
-                for (let i = 0; i < 2; i++) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(x - size, y + wobble);
-                    for (let j = -size; j <= size; j += size/4) {
-                        this.ctx.quadraticCurveTo(
-                            x + j, y + wobble + Math.sin(j * 0.5 + i) * size * (0.5 - i * 0.1),
-                            x + j + size/4, y + wobble
-                        );
-                    }
-                    this.ctx.fill();
-                }
-                break;
-        }
-        
-        // Reset shadow
-        this.ctx.shadowBlur = 0;
+    handleResize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        // Re-initialize clouds to redraw them correctly on new canvas size
+        this.clouds = []; // Clear existing clouds
+        this.init(); // Re-create and re-draw clouds
     }
 
-    drawCloud(x, y, width, height, opacity, puffSizes, puffShapes) {
-        // Create gradient for softer look
-        const gradient = this.ctx.createRadialGradient(
-            x + width/2, y + height/2, 0,
-            x + width/2, y + height/2, width/2
-        );
+    drawCloudPuff(x, y, radius, opacity) {
+        const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, radius);
         gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
         gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
-        
         this.ctx.fillStyle = gradient;
         
-        // Draw cloud puffs with varying shapes and sizes
-        puffSizes.forEach((size, index) => {
-            const puffX = x + (width * index / (puffSizes.length - 1));
-            const puffY = y + Math.sin(this.time * 0.001 + index) * 5;
-            const puffSize = height * size;
-            
-            this.drawCloudPuff(puffX, puffY, puffSize, puffShapes[index], this.time + index);
-        });
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
 
-        // Add subtle shadow
+    drawCloud(x, y, baseWidth, baseHeight, opacity, puffs) {
+        // Set overall cloud shadow
         this.ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
         this.ctx.shadowBlur = 10;
+        this.ctx.shadowOffsetX = 0;
         this.ctx.shadowOffsetY = 5;
+
+        puffs.forEach(puff => {
+            const puffX = x + puff.xOffset * baseWidth;
+            const puffY = y + puff.yOffset * baseHeight;
+            const puffRadius = (baseWidth + baseHeight) / 4 * puff.radiusFactor; 
+
+            this.drawCloudPuff(puffX, puffY, puffRadius, opacity);
+        });
+        
+        // Reset shadow after drawing the cloud
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
     }
 
     animate() {
@@ -136,24 +127,55 @@ class CloudyAnimation {
             this.drawCloud(
                 cloud.x,
                 cloud.y + verticalOffset,
-                cloud.width,
-                cloud.height,
+                cloud.baseWidth,
+                cloud.baseHeight,
                 cloud.opacity,
-                cloud.puffSizes,
-                cloud.puffShapes
+                cloud.puffs
             );
 
             // Update position with slight variation
             cloud.x += cloud.speed * (1 + Math.sin(this.time * 0.001) * 0.1);
             
             // Reset cloud when it goes off screen
-            if (cloud.x > this.canvas.width + cloud.width) {
-                cloud.x = -cloud.width;
+            if (cloud.x > this.canvas.width + cloud.baseWidth) {
+                cloud.x = -cloud.baseWidth;
                 cloud.y = Math.random() * (this.canvas.height / 2);
                 // Randomize some properties on reset
                 cloud.opacity = 0.6 + Math.random() * 0.3;
-                cloud.puffSizes = Array(cloud.puffCount).fill(0).map(() => 0.5 + Math.random() * 0.5);
-                cloud.puffShapes = Array(cloud.puffCount).fill(0).map(() => Math.random());
+                // Re-randomize structure for new cloud coming in
+                const cloudStructures = [
+                    // Standard fluffy cloud
+                    [
+                        { xOffset: 0, yOffset: 0, radiusFactor: 1.0 },
+                        { xOffset: -0.3, yOffset: 0.2, radiusFactor: 0.7 },
+                        { xOffset: 0.3, yOffset: 0.2, radiusFactor: 0.7 },
+                        { xOffset: -0.2, yOffset: -0.2, radiusFactor: 0.6 },
+                        { xOffset: 0.2, yOffset: -0.2, radiusFactor: 0.6 },
+                        { xOffset: 0, yOffset: 0.4, radiusFactor: 0.5 } 
+                    ],
+                    // Wider, flatter cloud
+                    [
+                        { xOffset: 0, yOffset: 0, radiusFactor: 1.0 },
+                        { xOffset: -0.4, yOffset: 0.1, radiusFactor: 0.8 },
+                        { xOffset: 0.4, yOffset: 0.1, radiusFactor: 0.8 },
+                        { xOffset: -0.2, yOffset: -0.1, radiusFactor: 0.7 },
+                        { xOffset: 0.2, yOffset: -0.1, radiusFactor: 0.7 }
+                    ],
+                    // Taller, thinner cloud
+                    [
+                        { xOffset: 0, yOffset: 0, radiusFactor: 1.0 },
+                        { xOffset: 0.1, yOffset: 0.3, radiusFactor: 0.7 },
+                        { xOffset: -0.1, yOffset: 0.3, radiusFactor: 0.7 },
+                        { xOffset: 0, yOffset: -0.3, radiusFactor: 0.6 }
+                    ]
+                ];
+                const newStructure = cloudStructures[Math.floor(Math.random() * cloudStructures.length)];
+                cloud.puffs = newStructure.map(puff => ({
+                    xOffset: puff.xOffset,
+                    yOffset: puff.yOffset,
+                    radiusFactor: puff.radiusFactor,
+                    randomAngle: Math.random() * Math.PI * 2
+                }));
             }
         });
 
