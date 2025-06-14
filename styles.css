@@ -601,10 +601,12 @@ nav {
         overflow-y: hidden !important; /* Disable vertical scrolling */
         max-height: unset !important; /* Remove max-height for horizontal layout */
         white-space: nowrap; /* Prevent items from wrapping */
+        margin-inline-start: 15px;
     }
     .forecast-item {
         flex: 0 0 calc(50% - 0.5rem) !important; /* Make tiles two per row with gap */
-        min-width: calc(50% - 0.5rem) !important;
+        /* min-width: calc(50% - 0.5rem) !important; */
+
         max-width: calc(50% - 0.5rem) !important;
         padding: 0.8rem;
         aspect-ratio: 1 !important; /* Explicitly ensure square shape */
@@ -1077,39 +1079,45 @@ canvas {
 
 @media (max-width: 480px) {
     .forecast-container {
-        flex-direction: column !important;
-        overflow-x: hidden !important; /* Disable horizontal scrolling */
-        overflow-y: auto !important; /* Enable vertical scrolling */
-        white-space: normal !important; /* Allow items to wrap */
+        flex-direction: row; /* Ensure horizontal layout */
+        overflow-x: scroll; /* Enable horizontal scrolling */
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start; /* Align items to the start for scrolling */
     }
+
     .forecast-item {
-        flex: 0 0 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-        aspect-ratio: auto !important;
+        min-width: 100%; /* Make items take full width to show one at a time */
+        margin-right: 1rem; /* Add spacing between items */
+        scroll-snap-align: start;
     }
+
     .scroll-button {
-        display: none !important; /* Hide scroll buttons */
+        display: flex; /* Make scroll buttons visible */
+        opacity: 0.4; /* Ensure they are not completely transparent */
+        visibility: visible; /* Make them visible */
     }
+
     .forecast-wrapper {
-        padding: 0; /* Remove padding when buttons are hidden */
-        justify-content: center;
+        padding: 0 3rem; /* Re-add padding for buttons */
     }
+
     .sun-info {
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center;
+        flex-direction: row; /* Keep sunrise/sunset horizontal */
+        justify-content: space-between;
+        align-items: center;
     }
+
     .sun-info.sunrise i,
     .sun-info.sunset i {
-        order: unset !important;
-        margin: 0 !important;
+        margin: 0; /* Remove specific margins if present */
     }
+
     .sun-info.sunset .sun-time {
-        align-items: center !important;
+        text-align: right; /* Align sunset time to the right */
     }
+
     .sun-time {
-        align-items: center !important;
+        margin: 0 0.5rem; /* Adjust margin for sun times */
     }
 } 
